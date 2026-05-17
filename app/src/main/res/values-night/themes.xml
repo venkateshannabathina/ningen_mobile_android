@@ -1,0 +1,12 @@
+<resources>
+    <style name="Theme.Ningen" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#6C4FE8</item>
+        <item name="colorPrimaryVariant">#4A2FC7</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#A78BFA</item>
+        <item name="colorOnSecondary">#000000</item>
+        <item name="android:statusBarColor">#0a0a0f</item>
+        <item name="android:navigationBarColor">#0a0a0f</item>
+        <item name="android:windowBackground">#0a0a0f</item>
+    </style>
+</resources>
