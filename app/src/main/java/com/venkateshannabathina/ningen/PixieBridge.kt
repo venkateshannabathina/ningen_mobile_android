@@ -80,11 +80,8 @@ class PixieBridge(
         if (groqClient.hasApiKey()) {
             groqClient.loadSettings()
             emit("INIT_STATE", "voiceEnabled" to true)
+            // JS will send REQUEST_VRM from initVRM() — don't load here or two VRMs appear in the scene
             emit("SHOW_SCREEN", "screen" to "LOADING")
-            // Kick off VRM load for the last-used companion
-            val companion = context.getSharedPreferences("pixie_prefs", Context.MODE_PRIVATE)
-                .getString("companion", "pixie") ?: "pixie"
-            onRequestVrm(companion)
         } else {
             emit("SHOW_SCREEN", "screen" to "API_KEY")
         }
