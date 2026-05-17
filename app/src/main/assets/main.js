@@ -89,6 +89,7 @@ let settingsOpen = false;
 let isBusy = false;        // mirrors host isBusy
 let currentUIState = 'idle';
 let vrmAnimations = {};           // all animation URLs keyed by name (from LOAD_VRM)
+let _vrmLoading = false;          // guard against concurrent LOAD_VRM messages
 let _voiceEnabled = true;         // false when SoX is not installed on host
 let _inputMode = 'chat';          // 'chat' | 'mic' — which bottom input is active
 
@@ -1299,9 +1300,12 @@ function initVRM() {
 }
 
 async function loadVRM(vrmUri, vrmaUri, animations) {
+    if (_vrmLoading) { console.warn('[Pixie] loadVRM: already loading, ignoring duplicate call'); return; }
+    _vrmLoading = true;
     console.log('[Pixie] loadVRM uri:', vrmUri);
     if (!window.PixieVRM) {
         console.error('[Pixie] loadVRM: window.PixieVRM not defined');
+        _vrmLoading = false;
         return;
     }
     if (animations) vrmAnimations = animations;
@@ -1315,6 +1319,8 @@ async function loadVRM(vrmUri, vrmaUri, animations) {
     } catch (err) {
         console.error('[Pixie] VRM load failed:', err);
         if (pct) pct.textContent = 'load failed: ' + (err.message || err);
+    } finally {
+        _vrmLoading = false;
     }
 }
 
