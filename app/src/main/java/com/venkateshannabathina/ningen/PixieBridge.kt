@@ -21,7 +21,7 @@ class PixieBridge(
     private val audioRecorder = AudioRecorder(context)
     private val vrmManager = VrmManager(context)
 
-    private var pipeline = "idle"
+    @Volatile private var pipeline = "idle"
 
     companion object {
         const val AUDIO_PERMISSION_REQUEST = 1001
@@ -78,7 +78,7 @@ class PixieBridge(
 
     private fun onWebviewReady() {
         if (groqClient.hasApiKey()) {
-            groqClient.loadSettings(context)
+            groqClient.loadSettings()
             emit("INIT_STATE", "voiceEnabled" to true)
             emit("SHOW_SCREEN", "screen" to "LOADING")
             // Kick off VRM load for the last-used companion

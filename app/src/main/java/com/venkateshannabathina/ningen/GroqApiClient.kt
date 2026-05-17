@@ -76,7 +76,7 @@ class GroqApiClient(private val context: Context) {
         conversationHistory.clear()
     }
 
-    fun loadSettings(context: Context) {
+    fun loadSettings() {
         voiceName = plainPrefs.getString("voiceName", "diana") ?: "diana"
         model = plainPrefs.getString("model", "llama-3.3-70b-versatile") ?: "llama-3.3-70b-versatile"
         companionName = plainPrefs.getString("companionName", "Yuriko") ?: "Yuriko"
@@ -167,7 +167,7 @@ Available tags: [emotion:joy] [emotion:excited] [emotion:fun] [emotion:smirk] [e
         val response = httpClient.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("LLM error: HTTP ${response.code}")
 
-        val json = JSONObject(response.body!!.string())
+        val json = JSONObject(response.body?.string() ?: throw Exception("Empty response body"))
         val raw = json.getJSONArray("choices")
             .getJSONObject(0)
             .getJSONObject("message")
@@ -203,7 +203,7 @@ Available tags: [emotion:joy] [emotion:excited] [emotion:fun] [emotion:smirk] [e
         val response = httpClient.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("STT error: HTTP ${response.code}")
 
-        val raw = response.body!!.string().trim()
+        val raw = (response.body?.string() ?: throw Exception("Empty STT response")).trim()
         return if (WHISPER_HALLUCINATIONS.contains(raw.lowercase())) "" else raw
     }
 
@@ -233,7 +233,7 @@ Available tags: [emotion:joy] [emotion:excited] [emotion:fun] [emotion:smirk] [e
             throw Exception("TTS error: HTTP ${response.code}")
         }
 
-        val bytes = response.body!!.bytes()
+        val bytes = response.body?.bytes() ?: throw Exception("Empty TTS response")
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
@@ -294,10 +294,17 @@ Available tags: [emotion:joy] [emotion:excited] [emotion:fun] [emotion:smirk] [e
 
                 val response = httpClient.newCall(request).execute()
                 val newMemory = if (response.isSuccessful) {
-                    val json = JSONObject(response.body!!.string())
+                    val json = JSONObject(response.body?.string() ?: "")
                     json.getJSONArray("choices").getJSONObject(0).getJSONObject("message")
                         .getString("content").trim()
                 } else existingMemory
+
+                // Trim compressed messages from history, keep only the last 4 turns
+                if (conversationHistory.size > 4) {
+                    val keep = conversationHistory.takeLast(4)
+                    conversationHistory.clear()
+                    conversationHistory.addAll(keep)
+                }
 
                 onSave(newMemory)
             } catch (e: Exception) {

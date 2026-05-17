@@ -72,7 +72,8 @@ class VrmManager(private val context: Context) {
         val request = Request.Builder().url(url).build()
         val response = httpClient.newCall(request).execute()
         if (!response.isSuccessful) throw Exception("Download failed for $url: HTTP ${response.code}")
-        response.body!!.byteStream().use { input ->
+        val body = response.body ?: throw Exception("Empty response for $url")
+        body.byteStream().use { input ->
             dest.outputStream().use { output ->
                 input.copyTo(output)
             }

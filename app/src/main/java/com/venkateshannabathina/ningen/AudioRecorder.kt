@@ -11,6 +11,7 @@ class AudioRecorder(private val context: Context) {
     private var outputFile: File? = null
 
     fun startRecording() {
+        if (recorder != null) cancelRecording()
         val file = File(context.cacheDir, "pixie_recording_${System.currentTimeMillis()}.m4a")
         outputFile = file
 
